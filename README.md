@@ -1,14 +1,17 @@
 # Kubernetes learning path task solutions:
 
-``` {.sourceCode .bash}
 Install kind tool - https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
+
 Cluster setup step: Create cluster: kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
+
 Cluster clean-up step: Delete cluster: kind delete cluster
+
 
 Use command 'kubectl get pods -w' to monitor live state changes in pods from a different Terminal session
 
 
+``` {.sourceCode .bash}
 1) Kubernetes Components
 
 Task 1: kubectl describe pod kube-apiserver-kind-control-plane -n kube-system
