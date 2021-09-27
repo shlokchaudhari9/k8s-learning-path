@@ -1,5 +1,6 @@
 # Kubernetes learning path task solutions:
 
+``` {.sourceCode .bash}
 Install kind tool - https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
 Cluster setup step: Create cluster: kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
@@ -27,10 +28,9 @@ Task 2: kubectl apply -f workloads/init-container.yaml
         kubectl exec static-file-app-pod -c static-file-app-container -- rm /tmp/intro.txt
         kubectl delete pod static-file-app-pod
 
-``` {.sourceCode .bash}
 The container (and not the pod) tries to restart after deleting /tmp/intro.txt file but fails with an Error status.
 This happens because the /tmp/intro.txt file does not exist after container restart since file creation occurs in initContainer.
-Container restarts do not trigger initContainer. It only runs on pod start/restart. ```
+Container restarts do not trigger initContainer. It only runs on pod start/restart. 
 
 Task 3: kubectl apply -f workloads/nginx-daemonset.yaml
         kubectl delete daemonset nginx-app
@@ -160,3 +160,4 @@ Task 2: To enable RBAC, start the API server with the --authorization-mode flag 
         For example: kube-apiserver --authorization-mode=Example,RBAC --other-options --more-options
 
 Task 3: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+```
