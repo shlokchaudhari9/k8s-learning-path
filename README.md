@@ -1,4 +1,4 @@
-Kubernetes learning path task solutions:
+# Kubernetes learning path task solutions:
 
 Install kind tool - https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
@@ -27,9 +27,10 @@ Task 2: kubectl apply -f workloads/init-container.yaml
         kubectl exec static-file-app-pod -c static-file-app-container -- rm /tmp/intro.txt
         kubectl delete pod static-file-app-pod
 
-        The container (and not the pod) tries to restart after deleting /tmp/intro.txt file but fails with an Error status.
-        This happens because the /tmp/intro.txt file does not exist after container restart since file creation occurs in initContainer.
-        Container restarts do not trigger initContainer. It only runs on pod start/restart.
+``` {.sourceCode .bash}
+The container (and not the pod) tries to restart after deleting /tmp/intro.txt file but fails with an Error status.
+This happens because the /tmp/intro.txt file does not exist after container restart since file creation occurs in initContainer.
+Container restarts do not trigger initContainer. It only runs on pod start/restart. ```
 
 Task 3: kubectl apply -f workloads/nginx-daemonset.yaml
         kubectl delete daemonset nginx-app
