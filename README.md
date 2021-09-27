@@ -11,18 +11,20 @@ Cluster clean-up step: Delete cluster: kind delete cluster
 Use command 'kubectl get pods -w' to monitor live state changes in pods from a different Terminal session
 
 
-``` {.sourceCode .bash}
 1) Kubernetes Components
 
+``` {.sourceCode .bash}
 Task 1: kubectl describe pod kube-apiserver-kind-control-plane -n kube-system
         kubectl describe pod kube-controller-manager-kind-control-plane -n kube-system
         kubectl describe pod kube-scheduler-kind-control-plane -n kube-system
 
 Task 2: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/ --controller strings
+```
 
 
 2) Workloads
 
+``` {.sourceCode .bash}
 Task 1: kubectl run ping-google-pod --image=alpine ping 8.8.8.8
         kubectl delete pod ping-google-pod
 
@@ -56,17 +58,21 @@ Task 6: docker cp workloads/kube-scheduler-modified.yaml kind-control-plane:/etc
         kubectl run ping-google-pod --image=alpine ping 8.8.8.8
         kubectl get pods -w
         Revert back the image tag change made to kube-scheduler.yaml manifest
+```
 
 
 3) Kubernetes Objects
 
+``` {.sourceCode .bash}
 Task 1: kubectl apply -f k8s-objects/nginx-deployment-replicas.yaml
         Manually change the label in the pod template of nginx-deployment-replicas.yaml file & run the above command again to update those changes
         kubectl delete deployment nginx-deployment
+```
 
 
 4) Networking
 
+``` {.sourceCode .bash}
 Task 1: kubectl apply -f networking/nginx-deployment.yaml
         kubectl run test-pod-ns-one -n ns-one --image=busybox:latest ping 8.8.8.8
         Note down the Endpoint in below command
@@ -101,10 +107,12 @@ Task 3: kubectl create deployment nginx --image=nginx
         wget --spider --timeout=1 nginx
         kubectl delete deployment nginx
         kubectl delete sevice nginx
+```
 
 
 5) Configuration
 
+``` {.sourceCode .bash}
 Task 1: kubectl apply -f configuration/configmap-pod.yaml
         kubectl exec -it test-pod -- /bin/sh
         env
@@ -128,10 +136,12 @@ Task 3: echo -n '1f2d1e2e67df' > configuration/password.txt
         kubectl create secret generic pass-example-literal --from-literal=password='1f2d1e2e67df'
         kubectl get secret pass-example-literal -o yaml
         Observe that the value to password key is decoded
+```
 
 
 6) Storage
 
+``` {.sourceCode .bash}
 Task 1: https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/
 
 Task 2: kubectl apply -f storage/pod-with-two-containers.yaml
@@ -149,10 +159,12 @@ Task 3: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
         Note down the node pod is scheduled on
         docker exec -it (node-name) ls /var/local/
         docker exec -it (node-name) ls /var/local/aaa
+```
 
 
 7) Security
 
+``` {.sourceCode .bash}
 Task 1: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
         https://stackoverflow.com/questions/47973570/kubernetes-log-user-systemserviceaccountdefaultdefault-cannot-get-services
         kubectl apply -f security/kanister-pod.yaml
