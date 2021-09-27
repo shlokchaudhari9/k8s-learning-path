@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-database
+spec:
+  selector:
+    matchLabels:
+      app: postgresql-database
+  serviceName: postgresql-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql-database
+    spec:
+      containers:
+        - name: postgresql-database
+          image: postgres
+          env:
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-loadbalancer
+spec:
+  selector:
+    app: postgres-database
+  type: LoadBalancer
+  ports:
+    - port: 5432
+      targetPort: 5432

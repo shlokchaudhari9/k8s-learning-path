@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: static-file-app-pod
+  labels:
+    app: static-file-app
+spec:
+  volumes:
+  - name: shared-data
+    emptyDir: {}
+  containers:
+  - name: static-file-app-container
+    image: busybox:1.28
+    command: ['sh', '-c', 'cat /tmp/intro.txt && while true; do sleep 30; done;']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /tmp
+    livenessProbe:
+      exec:
+        command:
+        - cat
+        - /tmp/intro.txt
+      initialDelaySeconds: 5
+      periodSeconds: 1
+  initContainers:
+  - name: init-static-file
+    image: busybox:1.28
+    command: ['sh', '-c', 'echo "My name is Shlok" >> /tmp/intro.txt']
+    volumeMounts:
+    - name: shared-data
+      mountPath: /tmp
+  restartPolicy: Always
