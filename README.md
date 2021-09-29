@@ -1,12 +1,16 @@
-# Kubernetes learning path task solutions:
+# kubernetes module task solutions:
+
+Module link - https://github.com/infracloudio/citadel-internal/tree/master/modules/kubernetes
 
 Install kind tool - https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
+``` {.sourceCode .bash}
+Create cluster
+> kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
 
-Cluster setup step: Create cluster: kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
-
-Cluster clean-up step: Delete cluster: kind delete cluster
-
+Delete cluster
+> kind delete cluster
+```
 
 Use command 'kubectl get pods -w' to monitor live state changes in pods from a different Terminal session
 
