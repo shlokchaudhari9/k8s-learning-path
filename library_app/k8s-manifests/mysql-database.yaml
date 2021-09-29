@@ -3,6 +3,35 @@ kind: Namespace
 metadata:
   name: library-app
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: library-app
+type: Opaque
+stringData:
+  password: password
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-configuration
+  namespace: library-app
+data:
+  mysqld.cnf: |
+    [mysqld]
+    pid-file	            = /var/run/mysqld/mysqld.pid
+    socket		            = /var/run/mysqld/mysqld.sock
+    # Where the database files are stored inside the container
+    datadir		            = /var/lib/mysql
+
+    # My application special configuration
+    max_allowed_packet          = 32M
+    sql-mode                    = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION'
+    
+    # Accept connections from any IP address
+    bind-address	            = 0.0.0.0
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
