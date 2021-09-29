@@ -176,3 +176,22 @@ Task 2: To enable RBAC, start the API server with the --authorization-mode flag 
 
 Task 3: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 ```
+
+
+8) Final Task - Library Application
+
+``` {.sourceCode .bash}
+Pre-built stable docker image: shlokc/library_application:1.0.8
+
+Prerequisite: Docker ID login credentials 
+> docker login 
+
+> cd ./final_task/library_app
+> docker build -f Dockerfile . -t <image-name:tag>
+> docker push <image-name:tag>
+> kubectl apply -f k8s/library-secret.yaml
+> kubectl apply -f k8s/library-config.yaml
+> kubectl apply -f k8s/mysql-database.yaml
+> kubectl run lib-api-server -n library-app --env="MYSQL_SERVER_IP=mysql-service" --env="MYSQL_SERVER_PORT=3306" --env="MYSQL_SERVER_USER=root" --env="MYSQL_SERVER_PASSWORD=password" --port=8080 --labels="app=library" --image=<image-name:tag> --command -- go run main.go
+> kubectl apply -f k8s/library-service.yaml
+```
