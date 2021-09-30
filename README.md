@@ -187,7 +187,7 @@ Task 3: https://kubernetes.io/docs/tasks/configure-pod-container/configure-servi
 ``` {.sourceCode .bash}
 Pre-built stable docker image: shlokc/library_application:1.0.8
 
-> cd ./library_app
+> cd ./library-app
 
 Prerequisite: Docker ID login credentials - Skip docker steps if you plan to use pre-built image
 
