@@ -1,201 +1,236 @@
-# kubernetes module task solutions:
+# Kubernetes Learning Module
 
-Module link - https://github.com/infracloudio/citadel-internal/tree/master/modules/kubernetes
+This repository contains hands-on exercises and solutions for learning Kubernetes core concepts and components.
 
-Install kind tool - https://kind.sigs.k8s.io/docs/user/quick-start/#installation
+## Prerequisites
 
-``` {.sourceCode .bash}
-Create cluster
-> kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
+- [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) - For creating local Kubernetes clusters
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - Kubernetes command-line tool
+- Docker installed and running
 
-Delete cluster
-> kind delete cluster
+## Cluster Setup
+
+Create a multi-node cluster using kind:
+```bash
+kind create cluster --config kind-cluster-config/kind-multi-node-cluster.yaml
 ```
 
-Use command 'kubectl get pods -w' to monitor live state changes in pods from a different Terminal session
-
-
-1) Kubernetes Components
-
-``` {.sourceCode .bash}
-Task 1: kubectl describe pod kube-apiserver-kind-control-plane -n kube-system
-        kubectl describe pod kube-controller-manager-kind-control-plane -n kube-system
-        kubectl describe pod kube-scheduler-kind-control-plane -n kube-system
-
-Task 2: https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/ --controller strings
+To delete the cluster:
+```bash
+kind delete cluster
 ```
 
+**Tip**: Use `kubectl get pods -w` in a separate terminal to monitor pod state changes in real-time.
 
-2) Workloads
+## Module Contents
 
-``` {.sourceCode .bash}
-Task 1: kubectl run ping-google-pod --image=alpine ping 8.8.8.8
-        kubectl delete pod ping-google-pod
+### 1. Kubernetes Components
+Learn about core Kubernetes control plane components.
 
-Task 2: kubectl apply -f workloads/init-container.yaml
-        kubectl logs static-file-app-pod
-        kubectl exec static-file-app-pod -c static-file-app-container -- rm /tmp/intro.txt
-        kubectl delete pod static-file-app-pod
+**Tasks:**
+1. Examine control plane components:
+   ```bash
+   # Inspect API Server
+   kubectl describe pod kube-apiserver-kind-control-plane -n kube-system
+   
+   # Inspect Controller Manager
+   kubectl describe pod kube-controller-manager-kind-control-plane -n kube-system
+   
+   # Inspect Scheduler
+   kubectl describe pod kube-scheduler-kind-control-plane -n kube-system
+   ```
 
-The container (and not the pod) tries to restart after deleting /tmp/intro.txt file but fails with an Error status.
-This happens because the /tmp/intro.txt file does not exist after container restart since file creation occurs in initContainer.
-Container restarts do not trigger initContainer. It only runs on pod start/restart. 
+2. Explore controller manager configuration options in the [official documentation](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/)
 
-Task 3: kubectl apply -f workloads/nginx-daemonset.yaml
-        kubectl delete daemonset nginx-app
-        
-Task 4: kubectl apply -f workloads/nginx-daemonset.yaml
-        Change the image tag to 'latest-not-available' in workloads/nginx-daemonset.yaml and run the Task 3 command again to apply the update
-        kubectl rollout status daemonset.apps/nginx-app
-        Ctrl + C
-        kubectl rollout undo daemonset.apps/nginx-app
-        kubectl delete daemonset nginx-app
+### 2. Workloads
+Practice working with different types of Kubernetes workloads.
 
-Task 5: kubectl apply -f workloads/postgresql-statefulset.yaml
-        kubectl delete statefulset postgresql-database
+**Tasks:**
+1. Basic Pod Operations:
+   ```bash
+   # Create a pod that pings Google DNS
+   kubectl run ping-google-pod --image=alpine ping 8.8.8.8
+   
+   # Clean up
+   kubectl delete pod ping-google-pod
+   ```
 
-Task 6: docker cp workloads/kube-scheduler-modified.yaml kind-control-plane:/etc/kubernetes/manifests/
-        docker exec -it kind-control-plane /bin/bash
-        cd /etc/kubernetes/manifests/
-        mv kube-scheduler-modified.yaml kube-scheduler.yaml
-        Ctrl + D
-        kubectl run ping-google-pod --image=alpine ping 8.8.8.8
-        kubectl get pods -w
-        Revert back the image tag change made to kube-scheduler.yaml manifest
+2. Init Containers:
+   ```bash
+   kubectl apply -f workloads/init-container.yaml
+   kubectl logs static-file-app-pod
+   
+   # Experiment with container lifecycle
+   kubectl exec static-file-app-pod -c static-file-app-container -- rm /tmp/intro.txt
+   ```
+   
+   **Note**: The container will attempt to restart after deleting `/tmp/intro.txt` but fail because init containers only run on pod start/restart.
+
+3. DaemonSets:
+   ```bash
+   kubectl apply -f workloads/nginx-daemonset.yaml
+   ```
+
+4. DaemonSet Rolling Updates:
+   ```bash
+   # Apply DaemonSet
+   kubectl apply -f workloads/nginx-daemonset.yaml
+   
+   # Trigger failed update (for learning purposes)
+   # Change image tag to 'latest-not-available' in yaml file
+   kubectl apply -f workloads/nginx-daemonset.yaml
+   
+   # Monitor rollout
+   kubectl rollout status daemonset.apps/nginx-app
+   
+   # Rollback
+   kubectl rollout undo daemonset.apps/nginx-app
+   ```
+
+5. StatefulSets:
+   ```bash
+   kubectl apply -f workloads/postgresql-statefulset.yaml
+   ```
+
+6. Scheduler Modification:
+   ```bash
+   # Copy modified scheduler config
+   docker cp workloads/kube-scheduler-modified.yaml kind-control-plane:/etc/kubernetes/manifests/
+   
+   # Apply changes
+   docker exec -it kind-control-plane /bin/bash
+   cd /etc/kubernetes/manifests/
+   mv kube-scheduler-modified.yaml kube-scheduler.yaml
+   ```
+
+### 3. Kubernetes Objects
+Learn about Kubernetes object management.
+
+**Task:**
+```bash
+# Deploy with replicas
+kubectl apply -f k8s-objects/nginx-deployment-replicas.yaml
+
+# Experiment with label changes
+# Modify pod template labels in nginx-deployment-replicas.yaml
 ```
 
+### 4. Networking
+Explore Kubernetes networking concepts.
 
-3) Kubernetes Objects
+**Tasks:**
+1. Service Discovery within namespace:
+   ```bash
+   kubectl apply -f networking/nginx-deployment.yaml
+   kubectl run test-pod-ns-one -n ns-one --image=busybox:latest ping 8.8.8.8
+   
+   # Get service endpoint
+   kubectl describe service -n ns-one nginx-service
+   
+   # Test connectivity
+   kubectl exec -it -n ns-one test-pod-ns-one -- /bin/sh
+   wget http://<endpoint>
+   ```
 
-``` {.sourceCode .bash}
-Task 1: kubectl apply -f k8s-objects/nginx-deployment-replicas.yaml
-        Manually change the label in the pod template of nginx-deployment-replicas.yaml file & run the above command again to update those changes
-        kubectl delete deployment nginx-deployment
+2. Cross-namespace communication
+3. Network Policies:
+   ```bash
+   # Create test deployment
+   kubectl create deployment nginx --image=nginx
+   kubectl expose deployment nginx --port=80
+   
+   # Test connectivity before policy
+   kubectl run busybox --rm -ti --image=busybox -- /bin/sh
+   wget --spider --timeout=1 nginx
+   
+   # Apply network policy
+   kubectl apply -f networking/nginx-policy.yaml
+   
+   # Test with and without required labels
+   kubectl run busybox --rm -ti --labels="access=true" --image=busybox -- /bin/sh
+   ```
+
+### 5. Configuration
+Work with ConfigMaps and Secrets.
+
+**Tasks:**
+1. ConfigMaps:
+   ```bash
+   kubectl apply -f configuration/configmap-pod.yaml
+   ```
+
+2. Secrets:
+   ```bash
+   kubectl apply -f configuration/secret-pod.yaml
+   ```
+
+3. Secret Creation Methods:
+   ```bash
+   # From file
+   echo -n '1f2d1e2e67df' > configuration/password.txt
+   kubectl create secret generic pass-example --from-file=password=configuration/password.txt
+   
+   # From literal
+   kubectl create secret generic pass-example-literal --from-literal=password='1f2d1e2e67df'
+   ```
+
+### 6. Storage
+Learn about Kubernetes storage options.
+
+**Tasks:**
+1. Study [Dynamic Provisioning](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/)
+2. Shared Volumes between containers:
+   ```bash
+   kubectl apply -f storage/pod-with-two-containers.yaml
+   ```
+3. HostPath volumes:
+   ```bash
+   kubectl apply -f storage/hostPath-example.yaml
+   ```
+
+### 7. Security
+Understand Kubernetes security concepts.
+
+**Tasks:**
+1. RBAC:
+   ```bash
+   kubectl apply -f security/kanister-pod.yaml
+   kubectl create rolebinding pod-reader-pod --role=pod-reader --serviceaccount=default:default
+   ```
+2. Authorization Modes
+3. Service Accounts
+
+### 8. Final Project: Library Application
+
+Deploy a complete library application with the following components:
+
+**Prerequisites:**
+- Docker Hub account (if building custom image)
+- Pre-built image available: `shlokc/library_application:1.0.8`
+
+**Deployment Steps:**
+```bash
+# Optional: Build and push custom image
+cd ./library-app
+docker login
+docker build -f Dockerfile . -t <image-name:tag>
+docker push <image-name:tag>
+
+# Deploy application
+kubectl apply -f k8s-manifests/mysql-database.yaml
+
+# Deploy API server
+kubectl run lib-api-server -n library-app \
+  --env="MYSQL_SERVER_IP=mysql-service" \
+  --env="MYSQL_SERVER_PORT=3306" \
+  --env="MYSQL_SERVER_USER=root" \
+  --env="MYSQL_SERVER_PASSWORD=password" \
+  --port=8080 \
+  --labels="app=library" \
+  --image=<image-name:tag> \
+  --command -- go run main.go
+
+# Deploy service
+kubectl apply -f k8s-manifests/library-service.yaml
 ```
 
-
-4) Networking
-
-``` {.sourceCode .bash}
-Task 1: kubectl apply -f networking/nginx-deployment.yaml
-        kubectl run test-pod-ns-one -n ns-one --image=busybox:latest ping 8.8.8.8
-        Note down the Endpoint in below command
-        kubectl describe service -n ns-one nginx-service
-        kubectl exec -it -n ns-one test-pod-ns-one -- /bin/sh
-        wget http://(above-endpoint)
-        cat index.html
-        Ctrl + D
-        Experiment - Exposed the nginx service out of the kind cluster as well (Try http://localhost:80 on browser)
-        kubectl delete namespace ns-one
-
-Task 2: kubectl apply -f networking/nginx-deployment.yaml
-        kubectl create namespace ns-two
-        kubectl run test-pod-ns-two -n ns-two --image=busybox:latest ping 8.8.8.8
-        Note down the Endpoint in below command
-        kubectl describe service -n ns-one nginx-service
-        kubectl exec -it -n ns-two test-pod-ns-two -- /bin/sh
-        wget http://(above-endpoint)
-        cat index.html
-        Ctrl + D
-        kubectl delete namespace ns-one
-        kubectl delete namespace ns-two
-
-Task 3: kubectl create deployment nginx --image=nginx
-        kubectl expose deployment nginx --port=80
-        kubectl run busybox --rm -ti --image=busybox -- /bin/sh
-        wget --spider --timeout=1 nginx
-        kubectl apply -f networking/nginx-policy.yaml
-        kubectl run busybox --rm -ti --image=busybox -- /bin/sh
-        wget --spider --timeout=1 nginx
-        kubectl run busybox --rm -ti --labels="access=true" --image=busybox -- /bin/sh
-        wget --spider --timeout=1 nginx
-        kubectl delete deployment nginx
-        kubectl delete sevice nginx
-```
-
-
-5) Configuration
-
-``` {.sourceCode .bash}
-Task 1: kubectl apply -f configuration/configmap-pod.yaml
-        kubectl exec -it test-pod -- /bin/sh
-        env
-        Look for environment variable 'NAME' with value as 'Shlok Chaudhari'
-        Ctrl + D
-        kubectl delete pod test-pod
-        kubectl delete configmap configmap-example
-
-Task 2: kubectl apply -f configuration/secret-pod.yaml
-        kubectl exec -it test-pod -- /bin/bash
-        env
-        Look for environment variable 'PASSWORD' with value as 'wfkbkeo11'
-        Ctrl + D
-        kubectl delete pod test-pod
-        kubectl delete secret secret-example
-
-Task 3: echo -n '1f2d1e2e67df' > configuration/password.txt
-        kubectl create secret generic pass-example --from-file=password=configuration/password.txt
-        kubectl get secret pass-example -o yaml
-        Observe that the value to password key is decoded
-        kubectl create secret generic pass-example-literal --from-literal=password='1f2d1e2e67df'
-        kubectl get secret pass-example-literal -o yaml
-        Observe that the value to password key is decoded
-```
-
-
-6) Storage
-
-``` {.sourceCode .bash}
-Task 1: https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/
-
-Task 2: kubectl apply -f storage/pod-with-two-containers.yaml
-        kubectl exec -c test-container-1 -it test-pod -- /bin/sh
-        echo "My name is Shlok" >> /cache/intro.txt
-        Ctrl + D
-        kubectl exec test-pod -c test-container-2 -- cat /cache/intro.txt
-        kubectl delete pod test-pod
-
-Task 3: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
-        kubectl apply -f storage/hostPath-example.yaml
-        kubectl exec -it test-webserver -- ls /var/local/
-        kubectl exec -it test-webserver -- ls /var/local/aaa
-        kubectl describe pod test-webserver
-        Note down the node pod is scheduled on
-        docker exec -it (node-name) ls /var/local/
-        docker exec -it (node-name) ls /var/local/aaa
-```
-
-
-7) Security
-
-``` {.sourceCode .bash}
-Task 1: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
-        https://stackoverflow.com/questions/47973570/kubernetes-log-user-systemserviceaccountdefaultdefault-cannot-get-services
-        kubectl apply -f security/kanister-pod.yaml
-        kubectl create rolebinding pod-reader-pod --role=pod-reader --serviceaccount=default:default
-        kubectl exec -it kanister-pod -- kubectl get pods
-
-Task 2: To enable RBAC, start the API server with the --authorization-mode flag set to a comma-separated list that includes RBAC
-        For example: kube-apiserver --authorization-mode=Example,RBAC --other-options --more-options
-
-Task 3: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
-```
-
-
-8) Final Task - Library Application
-
-``` {.sourceCode .bash}
-Pre-built stable docker image: shlokc/library_application:1.0.8
-
-> cd ./library-app
-
-Prerequisite: Docker ID login credentials - Skip docker steps if you plan to use pre-built image
-
-> docker login
-> docker build -f Dockerfile . -t <image-name:tag>
-> docker push <image-name:tag>
-
-> kubectl apply -f k8s-manifests/mysql-database.yaml
-> kubectl run lib-api-server -n library-app --env="MYSQL_SERVER_IP=mysql-service" --env="MYSQL_SERVER_PORT=3306" --env="MYSQL_SERVER_USER=root" --env="MYSQL_SERVER_PASSWORD=password" --port=8080 --labels="app=library" --image=<image-name:tag> --command -- go run main.go
-> kubectl apply -f k8s-manifests/library-service.yaml
-```
